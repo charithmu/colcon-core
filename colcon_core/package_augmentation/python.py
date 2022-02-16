@@ -45,7 +45,8 @@ class PythonPackageAugmentation(PackageAugmentationExtensionPoint):
 
         config = get_configuration(setup_cfg)
 
-        version = config.get('metadata', {}).get('version')
+        metadata = config.get('metadata', {})
+        version = metadata.get('version')
         desc.metadata['version'] = version
 
         options = config.get('options', {})
@@ -58,6 +59,15 @@ class PythonPackageAugmentation(PackageAugmentationExtensionPoint):
             return options
 
         desc.metadata['get_python_setup_options'] = getter
+
+        if 'maintainer' in metadata and 'maintainer_email' in metadata:
+            maintainers = [
+                (m[0].strip(), m[1].strip()) for m in zip(
+                    metadata['maintainer'].split(','),
+                    metadata['maintainer_email'].split(','))]
+            desc.metadata.setdefault('maintainers', [])
+            desc.metadata['maintainers'] += [
+                '{} <{}>'.format(*m) for m in maintainers]
 
 
 def extract_dependencies(options):
